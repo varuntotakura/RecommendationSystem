@@ -4,7 +4,7 @@ from sklearn import datasets
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 from sklearn.neighbors import KNeighborsClassifier
-from DatasetsPreprocess.Preprocess import knn_dataset
+from DatasetsPreprocess.KNN_Preprocess import knn_dataset
 from sklearn.metrics import accuracy_score
 import pandas as pd
 
