@@ -62,6 +62,7 @@ def result_vector_cosine(model,feature_vector,new_img):
 def input_show(data):
     plt.title("Query Image")
     plt.imshow(data)
+    plt.show()
   
 def show_result(data,result):
     fig = plt.figure(figsize=(12,8))
@@ -73,18 +74,19 @@ def show_result(data,result):
 
 def main(imageval):
     images_dir = 'h-and-m-personalized-fashion-recommendations/images'
-    load_data(images_dir)
     features=[]
-    output=load_data()
+    output = load_data(images_dir)
     main_model=model()
     #Limiting the data for training
     for i in output[:999]:
-        new_img=preprocess_img(i)
-        features.append(feature_extraction(new_img,main_model))
+        new_img = preprocess_img(i)
+        features.append(feature_extraction(new_img, main_model))
     feature_vec = np.array(features)
     result=result_vector_cosine(main_model,feature_vec, preprocess_img(output[imageval]))
     input_show(cv2.imread(output[imageval]))
     show_result(output, result)
+    output = load_data(images_dir)
+    input_show(cv2.imread(output[100]))
 
 if __name__=='__main__':
     main(99)
