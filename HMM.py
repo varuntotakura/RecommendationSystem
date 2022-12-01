@@ -167,3 +167,5 @@ def main():
     result_df["prediction"] = inference(le_article, model, test_loader)
     result_df.to_csv("submission.csv", index=False, columns=["customer_id", "prediction"])
     print(result_df)
+
+main()
