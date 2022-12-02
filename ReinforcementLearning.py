@@ -88,10 +88,10 @@ for i in range(epochs):
             if j % syn_freq == 0:
                 print(j)
                 MainModel.load_state_dict(model.state_dict())
-                torch.save(actor_model, '/content/gdrive/My Drive/Projects/Data Mining/H&M Fashion/ActorModel.pth')
-                torch.save(critic_model, '/content/gdrive/My Drive/Projects/Data Mining/H&M Fashion/CriticModel.pth')
-                torch.save(model, '/content/gdrive/My Drive/Projects/Data Mining/H&M Fashion/Model1.pth')
-                torch.save(MainModel, '/content/gdrive/My Drive/Projects/Data Mining/H&M Fashion/MainModel.pth')
+                torch.save(actor_model, './Checkpoints/ActorModel.pth')
+                torch.save(critic_model, './Checkpoints/CriticModel.pth')
+                torch.save(model, './Checkpoints/Model1.pth')
+                torch.save(MainModel, './Checkpoints/MainModel.pth')
                 if j == 5000:
                   done = True
         if done:
@@ -99,4 +99,4 @@ for i in range(epochs):
 
 losses = np.array(losses)
 plt.plot(losses)
-plt.savefig("RL_Loss.png")
+plt.savefig("./Graphs/RL_Loss.png")

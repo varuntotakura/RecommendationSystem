@@ -2,14 +2,14 @@ import numpy as np
 import pandas as pd
 
 def knn_dataset():
-    customers = pd.read_csv('h-and-m-personalized-fashion-recommendations/customers.csv')
+    customers = pd.read_csv('../input/h-and-m-personalized-fashion-recommendations/customers.csv')
     customers = customers[['customer_id','age','fashion_news_frequency','club_member_status']]
 
-    articles = pd.read_csv('h-and-m-personalized-fashion-recommendations/articles.csv')
+    articles = pd.read_csv('../input/h-and-m-personalized-fashion-recommendations/articles.csv')
     articles = articles[['article_id','product_code','product_type_no','colour_group_code','section_no','garment_group_no']]
     articles['article_id'] = articles.article_id.astype('int32')
     
-    transactions = pd.read_csv('h-and-m-personalized-fashion-recommendations/transactions_train.csv')
+    transactions = pd.read_csv('../input/h-and-m-personalized-fashion-recommendations/transactions_train.csv')
     transactions['year'] = pd.DatetimeIndex(transactions['t_dat']).year
     transactions['month'] = pd.DatetimeIndex(transactions['t_dat']).month
     transactions_per_year = transactions[['year','customer_id']].value_counts().reset_index()

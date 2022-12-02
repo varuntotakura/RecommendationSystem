@@ -44,7 +44,7 @@ def model():
         #model.summary()
     return model
 
-def feature_extraction(image_data,model):
+def feature_extraction(image_data, model):
     features=model.predict(image_data)
     features=np.array(features)
     features=features.flatten()
@@ -55,28 +55,30 @@ def result_vector_cosine(model,feature_vector,new_img):
     new_feature = np.array(new_feature)
     new_feature = new_feature.flatten()
     N_result = 12
-    nbrs = NearestNeighbors(n_neighbors=N_result, metric="cosine").fit(feature_vector)
-    distances, indices = nbrs.kneighbors([new_feature])
+    knn = NearestNeighbors(n_neighbors = N_result, metric="cosine").fit(feature_vector)
+    distances, indices = knn.kneighbors([new_feature])
     return(indices)
 
 def input_show(data):
     plt.title("Query Image")
     plt.imshow(data)
     plt.show()
+    plt.savefig('./Results/Query.png')
   
 def show_result(data,result):
-    fig = plt.figure(figsize=(12,8))
-    for i in range(0,12):
+    fig = plt.figure(figsize=(9,8))
+    for i in range(4,12):
         index_result=result[0][i]
         plt.subplot(3,4,i+1)
         plt.imshow(cv2.imread(data[index_result]))
     plt.show()
+    plt.savefig('./Results/QueryResult.png')
 
 def main(imageval):
-    images_dir = 'h-and-m-personalized-fashion-recommendations/images'
+    images_dir = '../input/h-and-m-personalized-fashion-recommendations/images'
     features=[]
     output = load_data(images_dir)
-    main_model=model()
+    main_model = model()
     #Limiting the data for training
     for i in output[:999]:
         new_img = preprocess_img(i)
@@ -86,7 +88,6 @@ def main(imageval):
     input_show(cv2.imread(output[imageval]))
     show_result(output, result)
     output = load_data(images_dir)
-    input_show(cv2.imread(output[100]))
 
 if __name__=='__main__':
     main(99)

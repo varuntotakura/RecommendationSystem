@@ -34,33 +34,6 @@ class KNeighborsClassifier:
         accuracy = sum(y_pred == y_test) / len(y_test)
         return accuracy
 
-# # Unpack the iris dataset, from UCI Machine Learning Repository
-# iris = datasets.load_iris()
-# X = iris['data']
-# y = iris['target']
-
-# # Split data into train & test sets
-# X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2)
-# # Preprocess data
-# ss = StandardScaler().fit(X_train)
-# X_train, X_test = ss.transform(X_train), ss.transform(X_test)
-# # Test knn model across varying ks
-# accuracies = []
-# ks = range(1, 30)
-# for k in ks:
-#     knn = KNeighborsClassifier(k=k)
-#     knn.fit(X_train, y_train)
-#     accuracy = knn.evaluate(X_test, y_test)
-#     accuracies.append(accuracy)
-# # Visualize accuracy vs. k
-# fig, ax = plt.subplots()
-# ax.plot(ks, accuracies)
-# ax.set(xlabel="k",
-#        ylabel="Accuracy",
-#        title="Performance of knn")
-# plt.show()
-
-
 X, y, validation_set, data = knn_dataset()
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size = 0.3, random_state = 0)
 

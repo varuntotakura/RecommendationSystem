@@ -3,9 +3,9 @@ import torch.nn as nn
 import torch.nn.functional as F
 import numpy as np
 
-class HiddenLayers(nn.Module):
+class LSTMCell(nn.Module):
     def __init__(self, n_tokens, hidden_size, n_tokens_per_class = None):
-        super(HiddenLayers, self).__init__()
+        super(LSTMCell, self).__init__()
         # Parameters
         self.n_tokens = n_tokens
         self.hidden_size = hidden_size
@@ -38,19 +38,25 @@ class HiddenLayers(nn.Module):
 
         return target_logits
 
-class HMModel(nn.Module):
+class LSTMModel(nn.Module):
     def __init__(self, article_shape, n_classes):
-        super(HMModel, self).__init__()
+        super(LSTMModel, self).__init__()
+        self.num_layers = 3
         self.n_classes = n_classes
         self.article_emb = nn.Embedding(article_shape[0], embedding_dim=article_shape[1])
-        self.hidden = HiddenLayers(self.n_classes, 512, n_tokens_per_class = 20)
+        self.rnn_cell_list = nn.ModuleList()
+        self.rnn_cell_list.append(LSTMCell(self.n_classes, 512, n_tokens_per_class = 20))
+        for _ in range(1, self.num_layers):
+            self.rnn_cell_list.append(LSTMCell(self.n_classes, 512, n_tokens_per_class = 20))
         
     def forward(self, inputs):
         article_hist, week_hist = inputs[0], inputs[1]
         x = self.article_emb(article_hist)
         x = F.normalize(x, dim=2)
         x, indices = x.max(axis=1)
-        logits = self.hidden(x)
+        logits = self.rnn_cell_list[0](x)
+        for i in range(1, self.num_layers):
+            logits = self.rnn_cell_list[i](x)
         logits = logits[:, :self.n_classes]
 
         return logits

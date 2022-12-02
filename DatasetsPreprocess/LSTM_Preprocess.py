@@ -4,9 +4,8 @@ import pandas as pd
 from sklearn.preprocessing import LabelEncoder
 from torch.utils.data import Dataset
 import torch
-from tqdm import tqdm
 
-class HMDataset(Dataset):
+class LSTMDataset(Dataset):
     def __init__(self, transactions, sequence_length, is_test=False):
         self.transactions = transactions.reset_index(drop=True)
         self.sequence_length = sequence_length
@@ -54,11 +53,11 @@ def create_dataset(transactions, week, WEEK_HIST_MAX = 5):
     
     return target_transactions.merge(hist_transactions, on="customer_id", how="left")
 
-def HMM_Dataset():
+def LSTM_Dataset():
     WEEK_HIST_MAX = 5
 
     customers = pd.read_csv('../input/h-and-m-personalized-fashion-recommendations/customers.csv')
-    customers = customers[['../input/customer_id','age','fashion_news_frequency','club_member_status']]
+    customers = customers[['customer_id','age','fashion_news_frequency','club_member_status']]
 
     articles = pd.read_csv('../input/h-and-m-personalized-fashion-recommendations/articles.csv')
     articles = articles[['article_id','product_code','product_type_no','colour_group_code','section_no','garment_group_no']]

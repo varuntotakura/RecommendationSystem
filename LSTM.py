@@ -1,3 +1,6 @@
+# Complete RL
+# Compare Models
+
 import sys
 import torch
 import numpy as np
@@ -8,8 +11,8 @@ import matplotlib.pyplot as plt
 from sklearn.preprocessing import LabelEncoder
 from tqdm import tqdm
 
-from DatasetsPreprocess.HMM_Preprocess import HMM_Dataset, HMDataset
-from Models.HMM_Model import HMModel
+from DatasetsPreprocess.LSTM_Preprocess import LSTM_Dataset, LSTMDataset
+from Models.LSTM_Model import LSTMModel
 
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
@@ -150,29 +153,29 @@ def main():
     BS = 256
     NW = 8
 
-    data, le_article, train_transactions, val_transactions, n_classes =  HMM_Dataset()
-    val_dataset = HMDataset(val_transactions, SEQ_LEN)
+    data, le_article, train_transactions, val_transactions, n_classes =  LSTM_Dataset()
+    val_dataset = LSTMDataset(val_transactions, SEQ_LEN)
     val_loader = DataLoader(val_dataset, batch_size=BS, shuffle=False, num_workers=NW,
                             pin_memory=False, drop_last=False)
-    train_dataset = HMDataset(train_transactions, SEQ_LEN)
+    train_dataset = LSTMDataset(train_transactions, SEQ_LEN)
     train_loader = DataLoader(train_dataset, batch_size=BS, shuffle=True, num_workers=NW,
                             pin_memory=False, drop_last=True)
 
-    model = HMModel((len(le_article.classes_), 512), n_classes)
+    model = LSTMModel((len(le_article.classes_), 512), n_classes)
     model = model.to(device)
     model, loss_list = train(model, train_loader, val_loader, epochs=10)
-    torch.save(model, "./Checkpoints/HMM.pth")
+    torch.save(model, "./Checkpoints/LSTM.pth")
 
     result_df = pd.read_csv('../input/h-and-m-personalized-fashion-recommendations/sample_submission.csv').drop("prediction", axis=1)
     result_df = create_test_dataset(data, result_df)
-    test_ds = HMDataset(result_df, SEQ_LEN, is_test=True)
+    test_ds = LSTMDataset(result_df, SEQ_LEN, is_test=True)
     test_loader = DataLoader(test_ds, batch_size=BS, shuffle=False, num_workers=NW,
                             pin_memory=False, drop_last=False)
     result_df["prediction"] = inference(le_article, model, test_loader)
-    result_df.to_csv("./Results/HMM_Results.csv", index=False, columns=["customer_id", "prediction"])
+    result_df.to_csv("/Results/LSTM_Results.csv", index=False, columns=["customer_id", "prediction"])
     print(result_df)
-    plt.plot(loss_list.head())
+    plt.plot(loss_list)
     plt.show()
-    plt.savefig('./Graphs/HMM_Loss.png')
+    plt.savefig('./Graphs/LSTM_Loss.png')
 
 main()
