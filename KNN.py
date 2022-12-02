@@ -4,39 +4,59 @@ from sklearn import datasets
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 from sklearn.neighbors import KNeighborsClassifier
-from DatasetsPreprocess.KNN_Preprocess import knn_dataset
 from sklearn.metrics import accuracy_score
 import pandas as pd
+import warnings
+from collections import Counter
 
-def most_common(lst):
-    return max(set(lst), key=lst.count)
+from DatasetsPreprocess.KNN_Preprocess import knn_dataset
 
-def euclidean(point, data):
-    # Euclidean distance between points a & data
-    return np.sqrt(np.sum((point - data)**2, axis=1))
-
-class KNeighborsClassifier:
-    def __init__(self, k=5, dist_metric=euclidean):
+class KNeighborsClasssifier():
+    '''
+        K-Nearest Neighbour Classifier
+    '''
+    def __init__(self, data, predict, k=1):
+        self.data = data
         self.k = k
-        self.dist_metric = dist_metric
-    def fit(self, X_train, y_train):
-        self.X_train = X_train
-        self.y_train = y_train
-    def predict(self, X_test):
-        neighbors = []
-        for x in X_test:
-            distances = self.dist_metric(x, self.X_train)
-            y_sorted = [y for _, y in sorted(zip(distances, self.y_train))]
-            neighbors.append(y_sorted[:self.k])
-        return list(map(most_common, neighbors))
-    def evaluate(self, X_test, y_test):
-        y_pred = self.predict(X_test)
-        accuracy = sum(y_pred == y_test) / len(y_test)
-        return accuracy
+        self.predict = predict
 
+    def euclidean(features, predict):
+        # Euclidean distance between points a & data
+        return np.linalg.norm(np.array(features) - np.array(predict))
+
+    def fit(self):
+        distance = []
+        for group in self.data:
+            for features in self.data[group]:
+                euclidean_distance = self.euclidean(features, self.predict)
+                distance.append([euclidean_distance, group])
+        self.votes = [i[1] for i in sorted(distance) [:k]]
+        
+    def predict(self):
+        vote_result = Counter(self.votes).most_common(1)[0][0]
+        confidence = (Counter(self.votes).most_common(1)[0][1])/k
+        return vote_result, confidence
+
+# Getting the Training and Testing Data and splitting it
 X, y, validation_set, data = knn_dataset()
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size = 0.3, random_state = 0)
 
+# Classing the Model to find the accuracy
+try:
+    correct = 0
+    total = 0
+    for group in y:
+        for data in y[group]:
+            knnc = KNeighborsClasssifier(X, data, k=5)
+            vote, confidence = knnc.fit()
+            if group == vote:
+                correct += 1
+    total +=1
+    print('Accuracy: ', correct/total)
+except:
+    pass
+
+# Testing the model and saving the data
 k = 1
 knn = KNeighborsClassifier(n_neighbors = k)
 knn = knn.fit(X_train, y_train)
@@ -45,15 +65,16 @@ predictions = knn.predict(X_test)
 accuracy = accuracy_score(predictions, y_test)
 print("Accuarcy of the KNN Model: ", accuracy)
 
+# Predicting the values
 result_freq = knn.predict(validation_set)
-
 data['article'] = result_freq.tolist()
 
-results_prep = data.groupby('customer_id').head(12)
-results_prep1 = results_prep.drop_duplicates(subset = ['customer_id','article'])
-results_prep2 = results_prep1[['customer_id','article']]
-results_prep2['article'] = ' 0' + results_prep1['article'].astype('str') 
-result = results_prep2.groupby('customer_id').sum().reset_index()
+# Saving the Results into a CSV File
+result_dataset = data.groupby('customer_id').head(12)
+result_dataset1 = result_dataset.drop_duplicates(subset = ['customer_id','article'])
+result_dataset2 = result_dataset1[['customer_id','article']]
+result_dataset2['article'] = ' 0' + result_dataset1['article'].astype('str') 
+result = result_dataset2.groupby('customer_id').sum().reset_index()
 result.columns = ['customer_id','predictions']
-
-print(result)
+result.to_csv("KNN_Results.csv", index=False, columns=["customer_id", "prediction"])
+print(result.head())

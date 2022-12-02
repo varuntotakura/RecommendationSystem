@@ -1,6 +1,3 @@
-# Complete RL
-# Compare Models
-
 import sys
 import torch
 import numpy as np
@@ -8,15 +5,18 @@ import pandas as pd
 from tqdm import tqdm
 from torch.utils.data import DataLoader
 import matplotlib.pyplot as plt
-from sklearn.preprocessing import LabelEncoder
-from tqdm import tqdm
 
+# Importing the custom files and corresponding classess and functions
 from DatasetsPreprocess.LSTM_Preprocess import LSTM_Dataset, LSTMDataset
 from Models.LSTM_Model import LSTMModel
 
+# Setting the device as CUDA if CUDA is available, if not to CPU
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
-def adjust_lr(optimizer, epoch):
+def learning_rate(optimizer, epoch):
+    '''
+        Variating the learing rate of the mdoel so that it could learn the training data without 
+    '''
     if epoch < 1:
         lr = 5e-5
     elif epoch < 6:
@@ -25,103 +25,66 @@ def adjust_lr(optimizer, epoch):
         lr = 1e-4
     else:
         lr = 1e-5
-
-    for p in optimizer.param_groups:
-        p['lr'] = lr
+    for param in optimizer.param_groups:
+        param['lr'] = lr
     return lr
     
 def get_optimizer(net):
-    optimizer = torch.optim.Adam(filter(lambda p: p.requires_grad, net.parameters()), lr=5e-5, betas=(0.9, 0.997),
-                                 eps=1e-07)
+    '''
+        Initializing the optimizer and starting learning rate
+    '''
+    optimizer = torch.optim.Adam(net.parameters(), lr=5e-5, weight_decay=0.9, eps=1e-07)
+
     return optimizer
 
-def calc_map(topk_preds, target_array, k=12):
+def mapping(topk_preds, target_array, k=12):
+    '''
+        Getting top 12 results from teh target array using TopK Algorithm
+    '''
     metric = []
-    tp, fp = 0, 0
-    
+    true_positive, false_positive = 0, 0
     for pred in topk_preds:
         if target_array[pred]:
-            tp += 1
-            metric.append(tp/(tp + fp))
+            true_positive += 1
+            metric.append(true_positive/(true_positive + false_positive))
         else:
-            fp += 1
-            
+            false_positive += 1
     return np.sum(metric) / min(k, target_array.sum())
 
 def read_data(data):
-    return tuple(d.cuda() for d in data[:-1]), data[-1].cuda()
+    '''
+        Read the data into device
+    '''
+    return tuple(d.to(device) for d in data[:-1]), data[-1].to(device)
 
-
-def validate(model, val_loader, k=12):
-    model.eval()
-    
-    tbar = tqdm(val_loader, file=sys.stdout)
-    
-    maps = []
-    
-    with torch.no_grad():
-        for idx, data in enumerate(tbar):
-            inputs, target = read_data(data)
-
-            logits = model(inputs)
-
-            _, indices = torch.topk(logits, k, dim=1)
-
-            indices = indices.detach().cpu().numpy()
-            target = target.detach().cpu().numpy()
-            
-            for i in range(indices.shape[0]):
-                maps.append(calc_map(indices[i], target[i]))
-        
-    return np.mean(maps)
-
-def dice_loss(y_pred, y_true):
-    y_pred = y_pred.sigmoid()
-    intersect = (y_true*y_pred).sum(axis=1)
-    
-    return 1 - (intersect/(intersect + y_true.sum(axis=1) + y_pred.sum(axis=1))).mean()
-
-
-def train(model, train_loader, val_loader, epochs):
-    SEED = 0
-    np.random.seed(SEED)
-    
+def train(model, train_loader, n_epochs):
+    '''
+        Training the model
+    '''
     optimizer = get_optimizer(model)
-    scaler = torch.cuda.amp.GradScaler()
-    
     criterion = torch.nn.functional.cross_entropy
-    
-    for e in range(epochs):
+    for epoch in range(n_epochs):
         model.train()
-        tbar = tqdm(train_loader, file=sys.stdout)
-        
-        lr = adjust_lr(optimizer, e)
-        
+        lr = learning_rate(optimizer, epoch)
         loss_list = []
-
-        for _, data in enumerate(tbar):
+        for _, data in enumerate(tqdm(train_loader)):
             inputs, target = read_data(data)
-
             optimizer.zero_grad()
-            
             with torch.cuda.amp.autocast():
                 logits = model(inputs)
                 loss = criterion(logits, target.long())
-            #loss.backward()
-            scaler.scale(loss).backward()
-            #optimizer.step()
-            scaler.step(optimizer)
-            scaler.update()
-            
+            loss.backward()
+            optimizer.step()
             loss_list.append(loss.detach().cpu().item())
-            
             avg_loss = np.round(100*np.mean(loss_list), 4)
-
-            tbar.set_description(f"Epoch {e+1} Loss: {avg_loss} lr: {lr}")
+        print(f"Epoch {epoch+1} Loss: {avg_loss} lr: {lr}")
             
     return model, loss_list
 
-def create_test_dataset(df, result_df):
+def format_test_dataset(df, result_df):
+    '''
+        Format the dataset
+    '''
     WEEK_HIST_MAX = 5
     week = -1
     result_df["week"] = week
@@ -130,12 +93,14 @@ def create_test_dataset(df, result_df):
     hist_df.rename(columns={"week": 'week_history'}, inplace=True)
     return result_df.merge(hist_df, on="customer_id", how="left")
 
-def inference(le_article, model, loader, k=12):
+def label_decoder(label_encoder, model, loader, k=12):
+    '''
+        Decode the labels into its original formata and pick top 12 items using the TopK Algorithm
+    '''
     model.eval()
-    tbar = tqdm(loader, file=sys.stdout)
     preds = []
     with torch.no_grad():
-        for idx, data in enumerate(tbar):
+        for idx, data in enumerate(tqdm(loader)):
             inputs, target = read_data(data)
             logits = model(inputs)
             _, indices = torch.topk(logits, k, dim=1)
@@ -145,37 +110,36 @@ def inference(le_article, model, loader, k=12):
                 str_arr = []
                 for s in indices[i]:
                     str_arr.append(s)
-                preds.append(le_article.inverse_transform(str_arr))
+                preds.append(label_encoder.inverse_transform(str_arr))
     return preds
 
 def main():
-    SEQ_LEN = 16
-    BS = 256
-    NW = 8
+    SEQ_LEN = 32
+    BATCH_SIZE = 128
+    NUM_WORKERS = 16
 
-    data, le_article, train_transactions, val_transactions, n_classes =  LSTM_Dataset()
+    data, label_encoder, train_transactions, val_transactions, n_classes =  LSTM_Dataset()
     val_dataset = LSTMDataset(val_transactions, SEQ_LEN)
-    val_loader = DataLoader(val_dataset, batch_size=BS, shuffle=False, num_workers=NW,
+    val_loader = DataLoader(val_dataset, batch_size=BATCH_SIZE, shuffle=False, num_workers=NUM_WORKERS,
                             pin_memory=False, drop_last=False)
     train_dataset = LSTMDataset(train_transactions, SEQ_LEN)
-    train_loader = DataLoader(train_dataset, batch_size=BS, shuffle=True, num_workers=NW,
+    train_loader = DataLoader(train_dataset, batch_size=BATCH_SIZE, shuffle=True, num_workers=NUM_WORKERS,
                             pin_memory=False, drop_last=True)
 
-    model = LSTMModel((len(le_article.classes_), 512), n_classes)
+    model = LSTMModel((len(label_encoder.classes_), 512), n_classes)
     model = model.to(device)
-    model, loss_list = train(model, train_loader, val_loader, epochs=10)
+    model, loss_list = train(model, train_loader, n_epochs=10)
     torch.save(model, "./Checkpoints/LSTM.pth")
-
+    model = torch.load("./Checkpoints/LSTM.pth")
     result_df = pd.read_csv('../input/h-and-m-personalized-fashion-recommendations/sample_submission.csv').drop("prediction", axis=1)
-    result_df = create_test_dataset(data, result_df)
-    test_ds = LSTMDataset(result_df, SEQ_LEN, is_test=True)
-    test_loader = DataLoader(test_ds, batch_size=BS, shuffle=False, num_workers=NW,
+    result_df = format_test_dataset(data, result_df)
+    test_ds = LSTMDataset(result_df, SEQ_LEN, test_purpose=True)
+    test_loader = DataLoader(test_ds, batch_size=BATCH_SIZE, shuffle=False, num_workers=NUM_WORKERS,
                             pin_memory=False, drop_last=False)
-    result_df["prediction"] = inference(le_article, model, test_loader)
-    result_df.to_csv("/Results/LSTM_Results.csv", index=False, columns=["customer_id", "prediction"])
-    print(result_df)
+    result_df["prediction"] = label_decoder(label_encoder, model, test_loader)
+    result_df.to_csv("./Results/LSTM_Results.csv", index=False, columns=["customer_id", "prediction"])
+    print(result_df.head())
     plt.plot(loss_list)
     plt.show()
-    plt.savefig('./Graphs/LSTM_Loss.png')
 
 main()
