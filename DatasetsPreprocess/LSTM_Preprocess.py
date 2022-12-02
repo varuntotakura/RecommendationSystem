@@ -69,16 +69,16 @@ def LSTM_Dataset():
     WEEK_HIST_MAX = 5
 
     # Import customer table
-    customers = pd.read_csv('h-and-m-personalized-fashion-recommendations/customers.csv')
+    customers = pd.read_csv('../input/h-and-m-personalized-fashion-recommendations/customers.csv')
     customers = customers[['customer_id','age','fashion_news_frequency','club_member_status']]
 
     # Import Articles table
-    articles = pd.read_csv('h-and-m-personalized-fashion-recommendations/articles.csv')
+    articles = pd.read_csv('../input/h-and-m-personalized-fashion-recommendations/articles.csv')
     articles = articles[['article_id','product_code','product_type_no','colour_group_code','section_no','garment_group_no']]
     articles['article_id'] = articles.article_id.astype('int32')
     
     # Import transactions table
-    transactions = pd.read_csv('h-and-m-personalized-fashion-recommendations/transactions_train.csv')
+    transactions = pd.read_csv('../input/h-and-m-personalized-fashion-recommendations/transactions_train.csv')
     transactions["t_dat"] = pd.to_datetime(transactions["t_dat"])
     # Sorting the frequently bought items from the transactions table
     frequently_bought = transactions.groupby("article_id")["t_dat"].max().reset_index()
@@ -101,9 +101,9 @@ def LSTM_Dataset():
 
     # Making train and test data
     train_weeks = [0, 1, 2, 3]
-    val_weeks = [4]
+    test_weeks = [4]
     training_transactions = pd.concat([format_dataset(transactions, w) for w in train_weeks]).reset_index(drop=True)
-    testing_transactions = pd.concat([format_dataset(transactions, w) for w in val_weeks]).reset_index(drop=True)
+    testing_transactions = pd.concat([format_dataset(transactions, w) for w in test_weeks]).reset_index(drop=True)
     n_classes = transactions["article_id"].nunique()+1
 
     return transactions, label_encoder, training_transactions, testing_transactions, n_classes
