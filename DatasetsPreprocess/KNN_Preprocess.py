@@ -59,7 +59,7 @@ def knn_dataset():
     sampled_frequent_data['age_scale'] = (sampled_frequent_data['age']-sampled_frequent_data['age'].min())/(sampled_frequent_data['age'].max()-sampled_frequent_data['age'].min())
     sampled_frequent_data_model = sampled_frequent_data[['age_scale','colour_group_code_scale','garment_group_no_scale','fashion_news_frequency','product_type_no_scale','month_scale','club_member_status']]
     
-    # Declare X and y Variables for the Training and Testing
+
     X = frequent_data[['age_scale','colour_group_code_scale','garment_group_no_scale','fashion_news_frequency','product_type_no_scale','month_scale','club_member_status']]
     y = frequent_data['article_id']
     sampled_frequent_data_model = sampled_frequent_data_model.dropna()
