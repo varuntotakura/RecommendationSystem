@@ -82,6 +82,7 @@
 Link: https://www.kaggle.com/competitions/h-and-m-personalized-fashion-recommendations
 
 ## Note:
-We have tried to upload the CSV Files and Checkpoint files of the models but they exceed the space alloted by GitHub. So, uploaded those files in a Drive
+We have tried to upload the CSV Files and Checkpoint files of the models but they exceed the space alloted by GitHub. So, uploaded those files in a Google Drive
+
 Link: https://drive.google.com/drive/folders/1chbjW1SgBpT-Z8u61A7q1LM7e4o699gz?usp=share_link
 
