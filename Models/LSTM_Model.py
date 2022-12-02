@@ -15,8 +15,8 @@ class LSTMCell(nn.Module):
         self.n_tokens_per_class = n_tokens_per_class
         self.n_classes = int(np.ceil(self.n_tokens * 1. / self.n_tokens_per_class))
         self.n_tokens_actual = self.n_classes * self.n_tokens_per_class
-        # Declare the component of the Neural Network, i.e., weights and biases
-        # Using nn.Parameter to make the variable to work when they are called form the forward function with input parameter
+        # Declare weights and biases
+        # nn.Parameter to make the variable to work when they are called form the forward function with input parameter
         self.W1 = nn.Parameter(torch.FloatTensor(self.hidden_size, self.n_classes), requires_grad=True)
         self.b1 = nn.Parameter(torch.FloatTensor(self.n_classes), requires_grad=True)
         self.W2 = nn.Parameter(torch.FloatTensor(self.n_tokens_per_class, self.hidden_size), requires_grad=True)
