@@ -30,32 +30,13 @@ class Environment:
         self.customer_id = self.transactions.iloc[self.current_pos, 0]
         self.customer_index = self.customers.index[self.customers['customer_id']==self.customer_id].tolist()[0]
         self.customer_embed = self.emb_customers(torch.LongTensor([self.customer_index]).to(device, dtype=torch.long))
-        ###
-        # {outcome (for debugging)}
-        #   customer_id: 00039306476aaf41a07fed942884f16b30abfa83a2a8bea972019098d6406793 
-        #   customer_Index: 80 
-        #   emb_customers = Embedding(1371980, 30)
-        #   customer_embed = tensor([[ 0.5234,  1.1311,  0.9114, -1.6386, -0.1985,  1.3215, -0.2250,  0.6025,
-        #     0.3260,  0.8365,  1.2712,  0.1888,  0.2963, -0.7545,  0.9620,  1.8377,
-        #    -0.1847,  0.9194,  0.7094,  1.5421,  2.0885,  0.7273, -2.0009,  0.5741,
-        #    -1.9650, -0.0630,  0.4846, -1.0385, -0.1492, -1.1125]],
-        #   device='cuda:0', grad_fn=<EmbeddingBackward0>)
-        ###
+        
         return self.customer_embed
     
     def step(self, act):
         '''
             Step is the place where the environment needs to adjust its values as per the actions performed
-            ###
-            #   customer_id: 00039306476aaf41a07fed942884f16b30abfa83a2a8bea972019098d6406793 
-            #   customer_Index: 80 
-            #   emb_customers = Embedding(1371980, 30)
-            #   customer_embed = tensor([[ 0.5234,  1.1311,  0.9114, -1.6386, -0.1985,  1.3215, -0.2250,  0.6025,
-            #     0.3260,  0.8365,  1.2712,  0.1888,  0.2963, -0.7545,  0.9620,  1.8377,
-            #    -0.1847,  0.9194,  0.7094,  1.5421,  2.0885,  0.7273, -2.0009,  0.5741,
-            #    -1.9650, -0.0630,  0.4846, -1.0385, -0.1492, -1.1125]],
-            #   device='cuda:0', grad_fn=<EmbeddingBackward0>)
-            ###
+            
         '''
         reward = 0
         self.product_id = self.transactions.iloc[self.current_pos, 1]
