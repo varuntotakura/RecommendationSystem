@@ -66,7 +66,7 @@
 3. Set path in the environment variables
 4. Clone the repository into a folder
 5. The files CNN.py, HMM.py, KNN.py, LSTM.py and ReinforcementLearning.py are the main file of the project
-6. Dataset can be found at kaggle (H&M Personalized Fashion Recommendations): https://www.kaggle.com/competitions/h-and-m-personalized-fashion-recommendations 
+6. Dataset can be found at kaggle (H&M Personalized Fashion Recommendations)
 7. We have uploaded our results in Results folder. The performance of the models can be seen in Graphs folder 
 
 ## pip Commands:
