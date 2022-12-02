@@ -3,7 +3,7 @@ import numpy as np
 import pandas as pd
 
 def RL_Dataset():
-    transactions_train = '../input/h-and-m-personalized-fashion-recommendations/transactions_train.csv'
+    transactions_train = 'h-and-m-personalized-fashion-recommendations/transactions_train.csv'
     df_transactions = pd.read_csv(transactions_train,
                                 dtype= {
                                     'customer_id': 'str',
@@ -16,7 +16,7 @@ def RL_Dataset():
                                 dtype= {
                                     'customer_id': 'str'
                                 })
-    products = '../input/h-and-m-personalized-fashion-recommendations/articles.csv'
+    products = 'h-and-m-personalized-fashion-recommendations/articles.csv'
     df_products = pd.read_csv(products,
                                 dtype= {
                                     'article_id': 'str'
@@ -26,7 +26,7 @@ import numpy as np
 import pandas as pd
 
 def RL_Dataset():
-    transactions_train = '../input/h-and-m-personalized-fashion-recommendations/transactions_train.csv'
+    transactions_train = 'h-and-m-personalized-fashion-recommendations/transactions_train.csv'
     df_transactions = pd.read_csv(transactions_train,
                                 dtype= {
                                     'customer_id': 'str',
@@ -39,7 +39,7 @@ def RL_Dataset():
                                 dtype= {
                                     'customer_id': 'str'
                                 })
-    products = '../input/h-and-m-personalized-fashion-recommendations/articles.csv'
+    products = 'h-and-m-personalized-fashion-recommendations/articles.csv'
     df_products = pd.read_csv(products,
                                 dtype= {
                                     'article_id': 'str'
