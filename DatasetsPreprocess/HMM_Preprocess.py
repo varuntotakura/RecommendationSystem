@@ -68,16 +68,16 @@ def HMM_Dataset():
     WEEK_HIST_MAX = 5
 
     # Import customer table
-    customers = pd.read_csv('../input/h-and-m-personalized-fashion-recommendations/customers.csv')
+    customers = pd.read_csv('h-and-m-personalized-fashion-recommendations/customers.csv')
     customers = customers[['customer_id','age','fashion_news_frequency','club_member_status']]
 
     # Import Articles table
-    articles = pd.read_csv('../input/h-and-m-personalized-fashion-recommendations/articles.csv')
+    articles = pd.read_csv('h-and-m-personalized-fashion-recommendations/articles.csv')
     articles = articles[['article_id','product_code','product_type_no','colour_group_code','section_no','garment_group_no']]
     articles['article_id'] = articles.article_id.astype('int32')
     
     # Import transactions table
-    transactions = pd.read_csv('../input/h-and-m-personalized-fashion-recommendations/transactions_train.csv')
+    transactions = pd.read_csv('h-and-m-personalized-fashion-recommendations/transactions_train.csv')
     transactions["t_dat"] = pd.to_datetime(transactions["t_dat"])
     # Sorting the frequently bought items from the transactions table
     frequently_bought = transactions.groupby("article_id")["t_dat"].max().reset_index()
