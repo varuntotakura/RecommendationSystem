@@ -131,7 +131,7 @@ def main():
     model, loss_list = train(model, train_loader, n_epochs=10)
     torch.save(model, "./Checkpoints/HMM.pth")
     model = torch.load("./Checkpoints/HMM.pth")
-    result_df = pd.read_csv('../input/h-and-m-personalized-fashion-recommendations/sample_submission.csv').drop("prediction", axis=1)
+    result_df = pd.read_csv('/h-and-m-personalized-fashion-recommendations/sample_submission.csv').drop("prediction", axis=1)
     result_df = format_test_dataset(data, result_df)
     test_ds = HMDataset(result_df, SEQ_LEN, is_test=True)
     test_loader = DataLoader(test_ds, batch_size=BATCH_SIZE, shuffle=False, num_workers=NUM_WORKERS,
